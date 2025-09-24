@@ -3,17 +3,56 @@ import { content } from './data/content.js';
 
 const LANGS = ['en', 'zh'];
 
+function resolveSystemLang() {
+  if (typeof window === 'undefined' || typeof window.navigator === 'undefined') {
+    return 'en';
+  }
+
+  const locales = window.navigator.languages && window.navigator.languages.length
+    ? window.navigator.languages
+    : [window.navigator.language];
+
+  for (const locale of locales) {
+    const normalized = locale?.split('-')?.[0];
+    if (normalized && LANGS.includes(normalized)) {
+      return normalized;
+    }
+  }
+
+  return 'en';
+}
+
 function useTheme() {
   const [theme, setTheme] = useState('light');
+  const [hasStoredPreference, setHasStoredPreference] = useState(false);
 
   useEffect(() => {
     const stored = window.localStorage.getItem('theme');
     if (stored === 'dark' || stored === 'light') {
       setTheme(stored);
-      return;
+      setHasStoredPreference(true);
+      return undefined;
     }
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    setTheme(prefersDark ? 'dark' : 'light');
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const applyPreference = (event) => {
+      setTheme(event.matches ? 'dark' : 'light');
+    };
+
+    setTheme(mediaQuery.matches ? 'dark' : 'light');
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', applyPreference);
+    } else if (typeof mediaQuery.addListener === 'function') {
+      mediaQuery.addListener(applyPreference);
+    }
+
+    return () => {
+      if (typeof mediaQuery.removeEventListener === 'function') {
+        mediaQuery.removeEventListener('change', applyPreference);
+      } else if (typeof mediaQuery.removeListener === 'function') {
+        mediaQuery.removeListener(applyPreference);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -23,11 +62,19 @@ function useTheme() {
     } else {
       root.classList.remove('dark');
     }
-    window.localStorage.setItem('theme', theme);
-  }, [theme]);
+
+    if (hasStoredPreference) {
+      window.localStorage.setItem('theme', theme);
+    }
+  }, [theme, hasStoredPreference]);
 
   const toggleTheme = () => {
-    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+    setHasStoredPreference(true);
+    setTheme((prev) => {
+      const nextTheme = prev === 'dark' ? 'light' : 'dark';
+      window.localStorage.setItem('theme', nextTheme);
+      return nextTheme;
+    });
   };
 
   return { theme, toggleTheme };
@@ -415,7 +462,10 @@ export default function App() {
     const storedLang = window.localStorage.getItem('lang');
     if (storedLang && LANGS.includes(storedLang)) {
       setLang(storedLang);
+      return;
     }
+
+    setLang(resolveSystemLang());
   }, []);
 
   useEffect(() => {
