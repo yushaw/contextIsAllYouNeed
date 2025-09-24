@@ -20,7 +20,6 @@ export const content = {
         'A practical playbook for LLM agents: start with signal hygiene, layer memory deliberately, then orchestrate tools, protocols, and governance.',
       badges: ['LLM Agents', 'Context Strategy'],
       ctaPrimary: { label: 'Explore the playbook', href: '#primer' },
-      ctaSecondary: { label: 'Jump to the playbook', href: '#playbook' },
       loopTitle: 'Context loop',
       loopYear: '2025',
       loop: [
@@ -242,7 +241,6 @@ export const content = {
         '这是一份给大模型智能体 (Agent) 用的实操手册：从源头把信息处理干净，再精心设计记忆的层次，最后把工具、协议和安全规范整合起来。',
       badges: ['大模型 Agent', '上下文策略'],
       ctaPrimary: { label: '快速入门', href: '#primer' },
-      ctaSecondary: { label: '查看实战指南', href: '#playbook' },
       loopTitle: '工作循环',
       loopYear: '2025',
       loop: [
