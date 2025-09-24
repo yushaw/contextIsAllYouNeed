@@ -80,9 +80,15 @@ function useTheme() {
   return { theme, toggleTheme };
 }
 
-function Header({ t, lang, theme, activeSection, onToggleLang, onToggleTheme }) {
+function Header({ t, lang, theme, activeSection, isScrolled, onToggleLang, onToggleTheme }) {
   return (
-    <header className="sticky top-0 z-40 backdrop-blur bg-slate-50/80 dark:bg-slate-950/80 border-b border-slate-200/60 dark:border-slate-800/60">
+    <header
+      className={`sticky top-0 z-40 border-b backdrop-blur transition-colors duration-300 ${
+        isScrolled
+          ? 'bg-slate-50/80 dark:bg-slate-950/80 border-slate-200/60 dark:border-slate-800/60'
+          : 'bg-transparent border-transparent'
+      }`}
+    >
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4 md:px-6">
         <a href="#hero" className="flex items-center gap-2 text-sm font-medium uppercase tracking-[0.4em] text-primary-500 dark:text-primary-300">
           <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-tr from-primary-500 via-accent to-tertiary text-white font-display text-lg">◎</span>
@@ -454,6 +460,7 @@ function GitHubIcon() {
 export default function App() {
   const [lang, setLang] = useState('en');
   const [activeSection, setActiveSection] = useState(null);
+  const [isScrolled, setIsScrolled] = useState(false);
   const { theme, toggleTheme } = useTheme();
 
   const t = useMemo(() => content[lang], [lang]);
@@ -475,6 +482,19 @@ export default function App() {
   const toggleLanguage = () => {
     setLang((prev) => (prev === 'en' ? 'zh' : 'en'));
   };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 0);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   useEffect(() => {
     const sectionIds = ['hero', ...t.sections.map((section) => section.id)];
@@ -517,6 +537,7 @@ export default function App() {
         lang={lang}
         theme={theme}
         activeSection={activeSection}
+        isScrolled={isScrolled}
         onToggleLang={toggleLanguage}
         onToggleTheme={toggleTheme}
       />
